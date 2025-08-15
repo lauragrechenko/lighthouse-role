@@ -7,11 +7,11 @@
     state: present
   when: ansible_os_family == "RedHat"
 
-# - name: Create Lighthouse root dir
-#   ansible.builtin.file:
-#     path: "{{ lighthouse_location_dir }}"
-#     state: directory
-#     mode: "0755"
+- name: Create Lighthouse root dir
+  ansible.builtin.file:
+    path: "{{ lighthouse_location_dir }}"
+    state: directory
+    mode: "0755"
 
 - name: Clone Lighthouse UI
   ansible.builtin.git:
@@ -33,7 +33,6 @@
     state: true
     persistent: true
   when:
-    - lighthouse_manage_selinux | bool
     - ansible_selinux is defined
     - ansible_selinux.status == "enabled"
 
@@ -43,13 +42,3 @@
   when:
     - ansible_selinux is defined
     - ansible_selinux.status == "enabled"
-# - name: Open firewall (fallback via firewall-cmd)
-#   ansible.builtin.command: >
-#     firewall-cmd --permanent --add-port={{ lighthouse_listen_port }}/tcp
-#   register: fw_add
-#   changed_when: "'already enabled' not in (fw_add.stdout ~ fw_add.stderr)"
-#   when: lighthouse_manage_firewalld | bool
-
-# - name: Reload firewalld (fallback)
-#   ansible.builtin.command: firewall-cmd --reload
-#   when: lighthouse_manage_firewalld | bool
