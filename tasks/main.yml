@@ -1,0 +1,55 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for lighthouse
+- name: Ensure Git present (RedHat family)
+  ansible.builtin.dnf:
+    name: git
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# - name: Create Lighthouse root dir
+#   ansible.builtin.file:
+#     path: "{{ lighthouse_location_dir }}"
+#     state: directory
+#     mode: "0755"
+
+- name: Clone Lighthouse UI
+  ansible.builtin.git:
+    repo: "{{ lighthouse_vcs }}"
+    version: "{{ lighthouse_version }}"
+    dest: "{{ lighthouse_location_dir }}"
+    force: true
+
+- name: Deploy Lighthouse nginx site
+  ansible.builtin.template:
+    src: "lighthouse.conf.j2"
+    dest: "{{ nginx_conf_path }}"
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Allow httpd to connect out (SELinux)  # needed for proxy_pass to ClickHouse
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect
+    state: true
+    persistent: true
+  when:
+    - lighthouse_manage_selinux | bool
+    - ansible_selinux is defined
+    - ansible_selinux.status == "enabled"
+
+- name: Restore SELinux context on docroot (safe)
+  command: restorecon -Rv {{ lighthouse_location_dir }}
+  changed_when: false
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status == "enabled"
+# - name: Open firewall (fallback via firewall-cmd)
+#   ansible.builtin.command: >
+#     firewall-cmd --permanent --add-port={{ lighthouse_listen_port }}/tcp
+#   register: fw_add
+#   changed_when: "'already enabled' not in (fw_add.stdout ~ fw_add.stderr)"
+#   when: lighthouse_manage_firewalld | bool
+
+# - name: Reload firewalld (fallback)
+#   ansible.builtin.command: firewall-cmd --reload
+#   when: lighthouse_manage_firewalld | bool
