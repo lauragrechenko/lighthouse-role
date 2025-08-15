@@ -15,9 +15,5 @@ lighthouse_listen_port: 8080
 server_name: "_"
 
 # ClickHouse HTTP endpoint the UI will proxy to
-clickhouse_host: "158.160.185.155"
+clickhouse_host: "localhost"
 clickhouse_port: 8123
-
-# Manage firewall and SELinux automatically
-lighthouse_manage_firewalld: true
-lighthouse_manage_selinux: true
