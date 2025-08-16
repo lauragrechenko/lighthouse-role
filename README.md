@@ -24,23 +24,31 @@ Network/firewall/SG must allow the chosen listen port.
 Role Variables
 --------------
 
-Defaults you can override (see defaults/main.yml):
+Defaults you can override (see defaults/main.yml).
+### Lighthouse source
 
+```
 lighthouse_vcs: "https://github.com/VKCOM/lighthouse.git"
 lighthouse_version: "master"
+```
 
-# Static files docroot
+### Static files docroot
+```
 lighthouse_location_dir: "/usr/share/nginx/html/lighthouse"
+```
 
-# Nginx site
+### Nginx site
+```
 nginx_conf_path: "/etc/nginx/conf.d/lighthouse.conf"
 lighthouse_listen_port: 8080
 server_name: "_"            # catch-all
+```
 
-# ClickHouse HTTP endpoint (proxied at /clickhouse/)
+### ClickHouse HTTP endpoint (proxied at /clickhouse/)
+```
 clickhouse_host: "127.0.0.1"
 clickhouse_port: 8123
-
+```
 
 Dependencies
 ------------
