@@ -1,38 +1,74 @@
-Role Name
+Lighthouse
 =========
 
-A brief description of the role goes here.
+Deploys Lighthouse (ClickHouse web UI) and configures an Nginx site to serve it and proxy /clickhouse/ to a ClickHouse HTTP endpoint.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Ansible ≥ 2.12
+
+OS: EL 8/9 (CentOS Stream/RHEL/Rocky/Alma)
+
+Nginx installed and running (e.g., via a separate nginx_base role)
+
+If SELinux is Enforcing:
+
+Non-standard ports (≠80/443) must be allowed for Nginx to bind.
+
+Custom docroot paths (outside default trees) must be labeled for httpd (httpd_sys_content_t).
+
+Network/firewall/SG must allow the chosen listen port.
+
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Defaults you can override (see defaults/main.yml):
+
+lighthouse_vcs: "https://github.com/VKCOM/lighthouse.git"
+lighthouse_version: "master"
+
+# Static files docroot
+lighthouse_location_dir: "/usr/share/nginx/html/lighthouse"
+
+# Nginx site
+nginx_conf_path: "/etc/nginx/conf.d/lighthouse.conf"
+lighthouse_listen_port: 8080
+server_name: "_"            # catch-all
+
+# ClickHouse HTTP endpoint (proxied at /clickhouse/)
+clickhouse_host: "127.0.0.1"
+clickhouse_port: 8123
+
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Optionally: an Nginx role (e.g., nginx_base) to install & start Nginx before this role.
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```
+- hosts: lighthouse
+  become: true
+  roles:
+    - role: nginx_base               # optional
+    - role: lighthouse
+      vars:
+        lighthouse_listen_port: 8080
+        lighthouse_location_dir: "/usr/share/nginx/html/lighthouse"
+        clickhouse_host: "10.0.0.42"
+        clickhouse_port: 8123
+        lighthouse_manage_firewalld: false   # if you open ports in cloud SG instead
+```
 
 License
 -------
 
-BSD
+MIT
 
 Author Information
-------------------
+-------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Laura
